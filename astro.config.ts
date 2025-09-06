@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config'
-
+import path from 'path'
 import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
@@ -9,19 +9,22 @@ import expressiveCode from 'astro-expressive-code'
 import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeKatex from 'rehype-katex'
-import rehypePrettyCode from 'rehype-pretty-code'
 import remarkEmoji from 'remark-emoji'
 import remarkMath from 'remark-math'
 import rehypeDocument from 'rehype-document'
-
+import pagefind from "astro-pagefind";
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections'
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 
 import tailwindcss from '@tailwindcss/vite'
 
+// Import your site config for virtual:config
+
+
 export default defineConfig({
   site: 'https://www.dijkstra.org.in/',
   integrations: [
+     pagefind(),
     expressiveCode({
       themes: ['github-light', 'github-dark'],
       plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
@@ -31,7 +34,7 @@ export default defineConfig({
         wrap: true,
         collapseStyle: 'collapsible-auto',
         overridesByLang: {
-          'ansi,bat,bash,batch,cmd,console,powershell,ps,ps1,psd1,psm1,sh,shell,shellscript,shellsession,text,zsh':
+          'ansi,bat,bash,batch,cmd,console,powershell,ps,ps1,psd1,psm1,sh,shell, shellscript,shellsession,text,zsh':
             {
               showLineNumbers: false,
             },
@@ -72,6 +75,14 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        '@': path.resolve('./src'),
+        '@assets': path.resolve('./src/assets'),
+        // Add this alias to solve the virtual:config error
+        'virtual:config': path.resolve('./src/site-config.ts'),
+      },
+    },
   },
   server: {
     port: 1234,
@@ -98,15 +109,7 @@ export default defineConfig({
       ],
       rehypeHeadingIds,
       rehypeKatex,
-      [
-        rehypePrettyCode,
-        {
-          theme: {
-            light: 'github-light',
-            dark: 'github-dark',
-          },
-        },
-      ],
+      
     ],
     remarkPlugins: [remarkMath, remarkEmoji],
   },

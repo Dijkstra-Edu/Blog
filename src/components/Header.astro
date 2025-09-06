@@ -5,19 +5,24 @@ import MobileMenu from '@/components/ui/mobile-menu'
 import { NAV_LINKS, SITE } from '@/consts'
 import { Image } from 'astro:assets'
 import logo from '../../public/icon.png'
+import Search01 from "@/assets/svgs/search-01.astro";
 ---
 
 <header transition:persist>
   <div
     class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3"
   >
+    <!-- Logo -->
     <Link href="/" class="flex shrink-0 items-center justify-center gap-3">
       <Image src={logo} alt="Logo" class="size-7 sm:size-8" />
       <span class="hidden h-full text-lg font-medium min-[300px]:block"
         >{SITE.title}</span
       >
     </Link>
+
+    <!-- Right side -->
     <div class="flex items-center sm:gap-4">
+      <!-- Nav Links -->
       <nav class="hidden items-center gap-4 text-sm sm:flex sm:gap-6">
         {
           NAV_LINKS.map((item) => (
@@ -30,6 +35,20 @@ import logo from '../../public/icon.png'
           ))
         }
       </nav>
+
+      <!-- Search -->
+      <div class="relative hidden sm:flex items-center">
+        <input
+          type="text"
+          placeholder="Search..."
+          class="w-40 rounded-md border border-foreground/20 bg-background px-2 py-1 text-sm focus:w-56 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+        />
+        <button class="absolute right-2 text-foreground/60 hover:text-foreground">
+          <Search01 class="w-4 h-4" />
+        </button>
+      </div>
+
+      <!-- Mobile menu + theme -->
       <MobileMenu client:load transition:persist />
       <ThemeToggle transition:persist />
     </div>

@@ -1,26 +1,30 @@
 ---
-import BlogCard from '@/components/BlogCard.astro'
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import PageHead from '@/components/PageHead.astro'
-import PaginationComponent from '@/components/ui/pagination'
-import { SITE } from '@/consts'
-import Layout from '@/layouts/Layout.astro'
-import { getAllPosts, groupPostsByYear } from '@/lib/data-utils'
-import type { PaginateFunction } from 'astro'
+import BlogCard from '@/components/BlogCard.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import PageHead from '@/components/PageHead.astro';
+import PaginationComponent from '@/components/ui/pagination';
+import { SITE } from '@/consts';
+import Layout from '@/layouts/Layout.astro';
+import { getAllPosts, groupPostsByYear } from '@/lib/data-utils';
+import type { PaginateFunction } from 'astro';
 
-export async function getStaticPaths({
-  paginate,
-}: {
-  paginate: PaginateFunction
-}) {
-  const allPosts = await getAllPosts()
-  return paginate(allPosts, { pageSize: SITE.postsPerPage })
+// Pagination for blog pages
+export async function getStaticPaths({ paginate }: { paginate: PaginateFunction }) {
+  const allPosts = await getAllPosts();
+  return paginate(allPosts, { pageSize: SITE.postsPerPage });
 }
 
-const { page } = Astro.props
+// Make sure page prop exists
+const { page } = Astro.props;
+if (!page || !page.data) {
+  throw new Error('Blog page data is missing.');
+}
 
-const postsByYear = groupPostsByYear(page.data)
-const years = Object.keys(postsByYear).sort((a, b) => parseInt(b) - parseInt(a))
+// Safely group posts by year
+const postsByYear = groupPostsByYear(page.data || []);
+const years = Object.keys(postsByYear)
+  .filter((year) => postsByYear[year]?.length > 0)
+  .sort((a, b) => parseInt(b) - parseInt(a));
 ---
 
 <Layout class="max-w-3xl">
@@ -33,20 +37,22 @@ const years = Object.keys(postsByYear).sort((a, b) => parseInt(b) - parseInt(a))
   />
 
   <div class="flex min-h-[calc(100vh-18rem)] flex-col gap-y-8">
-    {
+    {years.length > 0 ? (
       years.map((year) => (
-        <section class="flex flex-col gap-y-4">
+        <section class="flex flex-col gap-y-4" key={year}>
           <div class="font-medium">{year}</div>
           <ul class="flex flex-col gap-4">
             {postsByYear[year].map((post) => (
-              <li>
+              <li key={post.id}>
                 <BlogCard entry={post} />
               </li>
             ))}
           </ul>
         </section>
       ))
-    }
+    ) : (
+      <p>No posts found.</p>
+    )}
   </div>
 
   <PaginationComponent
