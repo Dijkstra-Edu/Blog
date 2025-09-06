@@ -23,6 +23,7 @@ import {
   getPostReadingTime,
   getCombinedReadingTime,
 } from '@/lib/data-utils';
+import Link from '@/components/Link.astro';
 
 // Waline Comment Component
 import  Comment  from '@/components/Comment.astro';
@@ -136,6 +137,19 @@ const relatedPosts = allPosts
         )}
       </div>
 
+{post.data.tags && post.data.tags.length > 0 && (
+  <div class="flex flex-wrap justify-center gap-2 mt-2">
+    {post.data.tags.map((tag) => (
+      <Link
+        href={`/tags/${tag}`}
+        class="px-2 py-1 rounded-md text-xs bg-gray-100 hover:bg-gray-200 transition"
+      >
+        #{tag}
+      </Link>
+    ))}
+  </div>
+)}
+
       <PostNavigation
         newerPost={navigation.newer}
         olderPost={navigation.older}
@@ -173,10 +187,7 @@ const relatedPosts = allPosts
       </section>
     )}
 
-    <!-- Waline Comment Section -->
-    <section class="col-start-2 mt-12">
-      <Comment class="mx-auto max-w-3xl" />
-    </section>
+    
 
     {(hasChildPosts || isCurrentSubpost) && (
       <SubpostsSidebar

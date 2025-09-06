@@ -37,16 +37,24 @@ import Search01 from "@/assets/svgs/search-01.astro";
       </nav>
 
       <!-- Search -->
-      <div class="relative hidden sm:flex items-center">
+      <form
+        action="/search"
+        method="get"
+        class="relative hidden sm:flex items-center"
+      >
         <input
           type="text"
+          name="q"
           placeholder="Search..."
           class="w-40 rounded-md border border-foreground/20 bg-background px-2 py-1 text-sm focus:w-56 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
         />
-        <button class="absolute right-2 text-foreground/60 hover:text-foreground">
+        <button
+          type="submit"
+          class="absolute right-2 text-foreground/60 hover:text-foreground"
+        >
           <Search01 class="w-4 h-4" />
         </button>
-      </div>
+      </form>
 
       <!-- Mobile menu + theme -->
       <MobileMenu client:load transition:persist />
