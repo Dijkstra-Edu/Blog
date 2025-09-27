@@ -9,56 +9,237 @@ import Search01 from "@/assets/svgs/search-01.astro";
 ---
 
 <header transition:persist>
-  <div
-    class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3"
-  >
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
     <!-- Logo -->
-    <Link href="/" class="flex shrink-0 items-center justify-center gap-3">
+    <Link href="/" class="flex shrink-0 items-center gap-3">
       <Image src={logo} alt="Logo" class="size-7 sm:size-8" />
-      <span class="hidden h-full text-lg font-medium min-[300px]:block"
-        >{SITE.title}</span
-      >
+      <span class="hidden text-lg font-medium min-[300px]:block">{SITE.title}</span>
     </Link>
 
     <!-- Right side -->
-    <div class="flex items-center sm:gap-4">
+    <div class="flex items-center sm:gap-4 relative">
       <!-- Nav Links -->
       <nav class="hidden items-center gap-4 text-sm sm:flex sm:gap-6">
-        {
-          NAV_LINKS.map((item) => (
-            <Link
-              href={item.href}
-              class="text-foreground/60 hover:text-foreground/80 capitalize transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))
-        }
+        {NAV_LINKS.map((item) => (
+          <Link
+            href={item.href}
+            class="text-foreground/60 hover:text-foreground/80 capitalize transition-colors"
+          >
+            {item.label}
+          </Link>
+        ))}
       </nav>
 
       <!-- Search -->
-      <form
-        action="/search"
-        method="get"
-        class="relative hidden sm:flex items-center"
-      >
+      <div class="relative hidden sm:block">
+        <!-- Trigger input (navbar) -->
         <input
           type="text"
-          name="q"
           placeholder="Search..."
-          class="w-40 rounded-md border border-foreground/20 bg-background px-2 py-1 text-sm focus:w-56 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+          id="header-search-input"
+          class="w-64 rounded-md border border-foreground/20 bg-background px-3 py-1.5 text-sm 
+                 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
         />
-        <button
-          type="submit"
-          class="absolute right-2 text-foreground/60 hover:text-foreground"
-        >
-          <Search01 class="w-4 h-4" />
-        </button>
-      </form>
 
-      <!-- Mobile menu + theme -->
-      <MobileMenu client:load transition:persist />
-      <ThemeToggle transition:persist />
+        <!-- Overlay -->
+        <div
+          id="search-overlay"
+          class="invisible fixed inset-0 z-50 flex justify-center bg-[rgba(0,0,0,0.5)] backdrop-blur-sm p-6 transition-opacity duration-300"
+        >
+          <div
+            id="pagefind-container"
+            class="m-0 flex h-fit max-h-[80%] w-full max-w-screen-sm flex-col overflow-auto rounded border border-black/15 bg-neutral-100 p-2 px-4 py-3 shadow-lg dark:border-white/20 dark:bg-neutral-900"
+          >
+            <div class="relative flex items-center gap-2 mb-3">
+              <input
+                type="text"
+                name="q"
+                placeholder="Search..."
+                id="overlay-search-input"
+                class="flex-1 rounded-md border border-foreground/20 bg-background px-3 py-2 text-base 
+                       focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+              />
+              <!-- Clear button -->
+              <button
+                id="clear-search"
+                type="button"
+                class="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+              >
+                &times;
+              </button>
+              <button type="submit" aria-label="Search">
+                <Search01 class="w-5 h-5 text-foreground/60 hover:text-foreground" />
+              </button>
+            </div>
+
+            <!-- Results dropdown -->
+            <div id="search-results" class="pagefind-ui pagefind-init flex flex-col gap-2 overflow-auto transition-all duration-300 opacity-0 translate-y-2"></div>
+
+            <div class="dark:prose-invert mr-2 pt-4 pb-1 text-right text-xs">
+              Press <kbd>Esc</kbd> or click anywhere to close
+            </div>
+          </div>
+        </div>
+      </div>
+      <ThemeToggle class="ml-2" transition:persist />
+      <!-- Profile / Auth Menu -->
+      <div class="relative">
+        <button
+          id="profile-btn"
+          class="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center"
+        >
+          <span>👤</span>
+        </button>
+
+        <div
+          id="profile-dropdown"
+          class="hidden absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
+        >
+          <div class="p-4 text-center border-b border-gray-200">
+            <p class="text-gray-7000 font-semibold text-sm">Get started on Medium</p>
+          </div>
+
+          <div class="flex flex-col gap-2 p-4">
+            <a
+              href="https://dijkstra-onboarding.example.com"
+              class="block w-full text-center py-2 rounded-base border border-green-600 bg-green-600 text-white font-medium hover:bg-green-700 transition-colors"
+            >
+              Sign up
+            </a>
+            <a
+              href="/api/auth/signin/github"
+              class="block w-full text-center py-2 rounded-base border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+            >
+              Sign in with GitHub
+            </a>
+          </div>
+
+          <div class="p-4 border-t border-gray-200 text-sm text-gray-500 space-y-2">
+            <a href="#" class="block hover:underline">Help</a>
+            <a href="#" class="block hover:underline">Become a Medium member ✨</a>
+            <a href="#" class="block hover:underline">Apply to the Partner Program</a>
+          </div>
+
+          <div class="p-4 border-t border-gray-200 text-xs text-gray-400 space-x-2 flex flex-wrap justify-center">
+            <a href="#" class="hover:underline">About</a>
+            <a href="#" class="hover:underline">Blog</a>
+            <a href="#" class="hover:underline">Careers</a>
+            <a href="#" class="hover:underline">Privacy</a>
+            <a href="#" class="hover:underline">Terms</a>
+            <a href="#" class="hover:underline">Text to speech</a>
+            <a href="#" class="hover:underline">More</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Scripts -->
+  <script is:inline>
+    const profileBtn = document.getElementById("profile-btn");
+    const profileDropdown = document.getElementById("profile-dropdown");
+
+    if (profileBtn && profileDropdown) {
+      profileBtn.addEventListener("click", () => {
+        profileDropdown.classList.toggle("hidden");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+          profileDropdown.classList.add("hidden");
+        }
+      });
+    }
+
+    // Search overlay
+    const headerInput = document.getElementById("header-search-input");
+    const overlay = document.getElementById("search-overlay");
+    const overlayInput = document.getElementById("overlay-search-input");
+    const resultsBox = document.getElementById("search-results");
+    const clearBtn = document.getElementById("clear-search");
+
+    const showOverlay = () => {
+      overlay.classList.remove("invisible");
+      overlay.style.opacity = 0;
+      setTimeout(() => overlay.style.opacity = 1, 10);
+      overlayInput.focus();
+    }
+
+    const hideOverlay = () => {
+      overlay.style.opacity = 0;
+      setTimeout(() => overlay.classList.add("invisible"), 200);
+      overlayInput.value = "";
+      resultsBox.innerHTML = "";
+      headerInput.value = "";
+    }
+
+    headerInput?.addEventListener("focus", showOverlay);
+
+    overlay?.addEventListener("click", (e) => {
+      if (e.target === overlay) hideOverlay();
+    });
+
+    clearBtn?.addEventListener("click", hideOverlay);
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const pagefind = await import("/pagefind/pagefind.js");
+        overlayInput.addEventListener("input", async (e) => {
+          const query = e.target.value.trim();
+          resultsBox.innerHTML = "";
+          if (!query) return;
+
+          const results = await pagefind.search(query);
+          if (!results || !results.results) return;
+
+          results.results.slice(0, 10).forEach(async (r) => {
+            const data = await r.data();
+            const link = document.createElement("a");
+            link.href = data.url;
+            link.className =
+              "block px-4 py-2 rounded-md hover:bg-foreground/10 transition-all opacity-0 translate-y-2";
+            link.innerHTML =
+              "<strong>" + (data.meta.title || "Untitled") + "</strong><br>" +
+              '<span class="text-sm opacity-70">' + data.excerpt + "</span>";
+            link.addEventListener("click", hideOverlay);
+
+            resultsBox.appendChild(link);
+            setTimeout(() => link.classList.remove("opacity-0", "translate-y-2"), 10);
+          });
+
+          resultsBox.style.opacity = 1;
+          resultsBox.style.transform = "translateY(0)";
+        });
+      } catch (err) {
+        console.error("Pagefind failed to load:", err);
+      }
+    });
+
+    document.addEventListener("keydown", (e) => { if(e.key === "Escape") hideOverlay(); });
+  </script>
+
+  <!-- Styling -->
+  <style is:inline>
+    :root {
+      --pagefind-ui-primary: oklch(var(--p));
+      --pagefind-ui-text: oklch(var(--bc));
+      --pagefind-ui-background: oklch(var(--b1));
+      --pagefind-ui-border: oklch(var(--b2));
+    }
+  </style>
+
+  <style is:global>
+    #header-pf-dropdown { display: none !important; }
+    #search-results a {
+      display: block;
+      margin-bottom: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      background: var(--pagefind-ui-background);
+      transition: background 0.2s;
+    }
+    #search-results a:hover { background: rgba(0,0,0,0.04); }
+  </style>
+  
+
 </header>

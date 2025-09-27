@@ -18,10 +18,12 @@ import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 
 import tailwindcss from '@tailwindcss/vite'
 
+
 // Import your site config for virtual:config
 
 
 export default defineConfig({
+ 
   site: 'https://www.dijkstra.org.in/',
   integrations: [
      pagefind(),

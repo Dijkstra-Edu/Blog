@@ -1,0 +1,61 @@
+---
+// ProfileMenu.astro
+// Minimal interactive profile avatar + dropdown for Astro (vanilla JS)
+---
+
+<div id="profile-root" class="relative inline-block">
+  <button id="profile-btn" aria-label="profile menu" class="focus:outline-none">
+    <img id="profile-img" src="/_public/avatar-placeholder.svg" alt="profile" class="w-10 h-10 rounded-full bg-gray-200 object-cover"/>
+  </button>
+
+  <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow z-50">
+    <a id="signup-link" href="https://dijkstra-onboarding.example.com" target="_blank" class="block px-4 py-3 hover:bg-gray-50">Sign up</a>
+    <a id="signin-link" href="/api/auth/signin/github" class="block px-4 py-3 hover:bg-gray-50">Sign in</a>
+    <div class="border-t my-2"></div>
+    <a href="#" class="block px-4 py-3 text-sm text-gray-500">Help</a>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const root = document.getElementById('profile-root');
+    const btn = document.getElementById('profile-btn');
+    const dropdown = document.getElementById('profile-dropdown');
+    const img = document.getElementById('profile-img');
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('hidden');
+    });
+
+    // close on outside click
+    document.addEventListener('click', (e) => {
+      if (!root.contains(e.target)) dropdown.classList.add('hidden');
+    });
+
+    // Load session and update UI
+    async function loadSession() {
+      try {
+        const res = await fetch('/api/auth/session', { headers: { Accept: 'application/json' }});
+        if (!res.ok) return;
+        const data = await res.json();
+        // If logged in: show avatar + name + sign out
+        if (data?.user) {
+          img.src = data.user.image || img.src;
+          dropdown.innerHTML = `
+            <div class="px-4 py-3">
+              <div class="font-medium">${data.user.name ?? ''}</div>
+              <div class="text-xs text-gray-500 break-words">${data.user.email ?? ''}</div>
+            </div>
+            <a href="/api/auth/signout" class="block px-4 py-3 hover:bg-gray-50">Sign out</a>
+          `;
+        }
+      } catch (err) {
+        // silent - no session
+        // console.log(err);
+      }
+    }
+
+    loadSession();
+  })();
+</script>

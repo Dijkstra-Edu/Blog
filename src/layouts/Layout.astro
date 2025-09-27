@@ -8,6 +8,7 @@ import Header from '@/components/Header.astro'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
 
+
 interface Props {
   class?: string
 }
@@ -19,13 +20,14 @@ const { class: className } = Astro.props
 <html class="bg-background text-foreground" lang={SITE.locale}>
   <Head>
     <slot name="head" />
+    <Header />
   </Head>
   <body>
     <div class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
       <div
         class="bg-background/50 sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"
       >
-        <Header />
+        
         <slot name="subposts-navigation" />
         <slot name="table-of-contents" />
       </div>
@@ -38,3 +40,4 @@ const { class: className } = Astro.props
     </div>
   </body>
 </html>
+

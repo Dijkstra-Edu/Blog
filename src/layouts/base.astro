@@ -6,6 +6,7 @@ import Footer from "@/components/Footer.astro";
 import type { Entry } from "@/lib/types";
 import { getMeta } from "@/lib/utils/getMeta";
 
+
 type Props = {
   entry: Entry;
 };
@@ -34,3 +35,4 @@ const meta = await getMeta(entry);
     <Footer />
   </body>
 </html>
+
