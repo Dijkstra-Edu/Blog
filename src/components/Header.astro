@@ -88,46 +88,46 @@ import Search01 from "@/assets/svgs/search-01.astro";
           id="profile-btn"
           class="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center"
         >
-          <span>👤</span>
+          <span>U</span>
         </button>
 
+        <!-- Profile Dropdown -->
         <div
           id="profile-dropdown"
-          class="hidden absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50"
+          class="hidden absolute right-0 mt-2 w-64 rounded-xl border border-foreground/10 bg-background shadow-lg z-50"
         >
-          <div class="p-4 text-center border-b border-gray-200">
-            <p class="text-gray-7000 font-semibold text-sm">Get started on Medium</p>
+          <!-- User info -->
+          <div class="flex items-center gap-3 p-4 border-b border-foreground/10">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary/60 to-primary/80 flex items-center justify-center text-white font-medium">
+              U
+            </div>
+            <div>
+              <p class="font-medium text-sm text-foreground">Guest User</p>
+              <p class="text-xs text-foreground/60">Not signed in</p>
+            </div>
           </div>
 
-          <div class="flex flex-col gap-2 p-4">
+          <!-- Actions -->
+          <div class="flex flex-col gap-2 p-3">
             <a
-              href="https://dijkstra-onboarding.example.com"
-              class="block w-full text-center py-2 rounded-base border border-green-600 bg-green-600 text-white font-medium hover:bg-green-700 transition-colors"
+              href="https://www.dijkstra.org.in/onboarding"
+              class="px-3 py-2 rounded-lg text-sm font-medium bg-primary text-white text-center hover:bg-primary/90 transition-colors"
             >
               Sign up
             </a>
             <a
               href="/api/auth/signin/github"
-              class="block w-full text-center py-2 rounded-base border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+              class="px-3 py-2 rounded-lg text-sm font-medium text-foreground/80 text-center hover:bg-foreground/5 transition-colors"
             >
               Sign in with GitHub
             </a>
           </div>
 
-          <div class="p-4 border-t border-gray-200 text-sm text-gray-500 space-y-2">
-            <a href="#" class="block hover:underline">Help</a>
-            <a href="#" class="block hover:underline">Become a Medium member ✨</a>
-            <a href="#" class="block hover:underline">Apply to the Partner Program</a>
-          </div>
-
-          <div class="p-4 border-t border-gray-200 text-xs text-gray-400 space-x-2 flex flex-wrap justify-center">
-            <a href="#" class="hover:underline">About</a>
-            <a href="#" class="hover:underline">Blog</a>
-            <a href="#" class="hover:underline">Careers</a>
-            <a href="#" class="hover:underline">Privacy</a>
-            <a href="#" class="hover:underline">Terms</a>
-            <a href="#" class="hover:underline">Text to speech</a>
-            <a href="#" class="hover:underline">More</a>
+          <!-- Footer links -->
+          <div class="border-t border-foreground/10 p-3 text-xs flex justify-between text-foreground/60">
+            <a href="#" class="hover:text-foreground transition-colors">Help</a>
+            <a href="#" class="hover:text-foreground transition-colors">About</a>
+            <a href="#" class="hover:text-foreground transition-colors">Privacy</a>
           </div>
         </div>
       </div>
