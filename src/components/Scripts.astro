@@ -1,0 +1,55 @@
+---
+---
+// Pagefind + search logic (runs globally on all pages)
+<script src="/pagefind/pagefind.js" defer></script>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", async () => {
+    if (!window.pagefind) return;
+
+    const headerInput = document.getElementById("header-search-input");
+    const overlay = document.getElementById("search-overlay");
+    const overlayInput = document.getElementById("overlay-search-input");
+    const resultsBox = document.getElementById("search-results");
+    if (!headerInput || !overlay || !overlayInput) return;
+
+    // Open overlay when navbar input is focused
+    headerInput.addEventListener("focus", () => {
+      overlay.classList.remove("hidden");
+      overlayInput.focus();
+    });
+
+    // Close overlay on background click
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) {
+        overlay.classList.add("hidden");
+        headerInput.value = "";
+      }
+    });
+
+    // Initialize Pagefind
+    const pagefind = await window.pagefind;
+
+    // Search handling
+    overlayInput.addEventListener("input", async (e) => {
+      const query = e.target.value.trim();
+      resultsBox.innerHTML = "";
+      if (!query) return;
+
+      const results = await pagefind.search(query);
+      if (!results?.results) return;
+
+      results.results.slice(0, 10).forEach(async (r) => {
+        const data = await r.data();
+        const link = document.createElement("a");
+        link.href = data.url;
+        link.className =
+          "block px-4 py-2 rounded-md hover:bg-foreground/10 transition";
+        link.innerHTML =
+          "<strong>" + (data.meta.title || "Untitled") + "</strong><br>" +
+          '<span class="text-sm opacity-70">' + data.excerpt + "</span>";
+        resultsBox.appendChild(link);
+      });
+    });
+  });
+</script>

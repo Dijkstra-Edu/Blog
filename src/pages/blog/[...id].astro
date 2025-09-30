@@ -1,214 +1,154 @@
 ---
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
-import Link from '@/components/Link.astro'
-import PostHead from '@/components/PostHead.astro'
-import PostNavigation from '@/components/PostNavigation.astro'
-import SubpostsHeader from '@/components/SubpostsHeader.astro'
-import SubpostsSidebar from '@/components/SubpostsSidebar.astro'
-import TOCHeader from '@/components/TOCHeader.astro'
-import TOCSidebar from '@/components/TOCSidebar.astro'
-import { badgeVariants } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import Layout from '@/layouts/Layout.astro'
+import Layout from '@/layouts/Layout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import PostHead from '@/components/PostHead.astro';
+import PostNavigation from '@/components/PostNavigation.astro';
+import SubpostsHeader from '@/components/SubpostsHeader.astro';
+import SubpostsSidebar from '@/components/SubpostsSidebar.astro';
+import TOCHeader from '@/components/TOCHeader.astro';
+import TOCSidebar from '@/components/TOCSidebar.astro';
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import { formatDate } from '@/lib/utils';
 import {
-  getAdjacentPosts,
   getAllPostsAndSubposts,
-  getCombinedReadingTime,
-  getParentId,
-  getParentPost,
-  getPostReadingTime,
-  getSubpostCount,
-  getTOCSections,
+  getAdjacentPosts,
   hasSubposts,
   isSubpost,
+  getParentPost,
+  getParentId,
+  getSubpostCount,
+  getTOCSections,
   parseAuthors,
-} from '@/lib/data-utils'
-import { formatDate } from '@/lib/utils'
-import { Icon } from 'astro-icon/components'
-import { Image } from 'astro:assets'
-import { render } from 'astro:content'
+  getPostReadingTime,
+  getCombinedReadingTime,
+} from '@/lib/data-utils';
+import Link from '@/components/Link.astro';
+
+// Waline Comment Component
+import  Comment  from '@/components/Comment.astro';
 
 export async function getStaticPaths() {
-  const posts = await getAllPostsAndSubposts()
+  const posts = await getAllPostsAndSubposts();
   return posts.map((post) => ({
     params: { id: post.id },
-    props: post,
-  }))
+  }));
 }
 
-const post = Astro.props
-const currentPostId = Astro.params.id
-const { Content, headings } = await render(post)
-const authors = await parseAuthors(post.data.authors ?? [])
+const postId = Astro.params.id;
 
-const isCurrentSubpost = isSubpost(currentPostId)
-const navigation = await getAdjacentPosts(currentPostId)
-const parentPost = isCurrentSubpost ? await getParentPost(currentPostId) : null
+// Load post data
+const allPosts = await getAllPostsAndSubposts();
+const post = allPosts.find((p) => p.id === postId);
+if (!post) throw new Error(`Post with id "${postId}" not found`);
 
-const hasChildPosts = await hasSubposts(currentPostId)
-const subpostCount = !isCurrentSubpost
-  ? await getSubpostCount(currentPostId)
-  : 0
-const postReadingTime = await getPostReadingTime(currentPostId)
+// Render markdown content
+const { Content, headings } = await render(post);
+
+// Get post metadata
+const authors = await parseAuthors(post.data.authors ?? []);
+const isCurrentSubpost = isSubpost(postId);
+const navigation = await getAdjacentPosts(postId);
+const parentPost = isCurrentSubpost ? await getParentPost(postId) : null;
+const hasChildPosts = await hasSubposts(postId);
+const subpostCount = !isCurrentSubpost ? await getSubpostCount(postId) : 0;
+const postReadingTime = await getPostReadingTime(postId);
 const combinedReadingTime =
   hasChildPosts && !isCurrentSubpost
-    ? await getCombinedReadingTime(currentPostId)
-    : null
+    ? await getCombinedReadingTime(postId)
+    : null;
+const tocSections = await getTOCSections(postId);
 
-const tocSections = await getTOCSections(currentPostId)
+// ---- Related posts logic ----
+const relatedPosts = allPosts
+  .filter((p) => p.id !== postId) // exclude current post
+  .sort(() => Math.random() - 0.5) // shuffle
+  .slice(0, 3); // take 3
+
 ---
 
 <Layout>
   <PostHead slot="head" post={post} />
-  {
-    (hasChildPosts || isCurrentSubpost) && (
-      <SubpostsHeader
-        slot="subposts-navigation"
-        parentId={isCurrentSubpost ? getParentId(currentPostId) : currentPostId}
-      />
-    )
-  }
-  {
-    headings?.length > 0 &&
-      !(
-        isCurrentSubpost &&
-        headings.length === 1 &&
-        headings[0].text === post.data.title
-      ) && <TOCHeader slot="table-of-contents" headings={headings} />
-  }
 
-  <section
-    class="grid grid-cols-[minmax(0px,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0px,1fr)] gap-y-6"
-  >
+  {(hasChildPosts || isCurrentSubpost) && (
+    <SubpostsHeader
+      slot="subposts-navigation"
+      parentId={isCurrentSubpost ? getParentId(postId) : postId}
+    />
+  )}
+
+  {headings?.length > 0 &&
+    !(
+      isCurrentSubpost &&
+      headings.length === 1 &&
+      headings[0].text === post.data.title
+    ) && <TOCHeader slot="table-of-contents" headings={headings} />}
+
+  <section class="grid grid-cols-[minmax(0,1fr)_min(calc(var(--breakpoint-md)-2rem),100%)_minmax(0,1fr)] gap-y-6">
     <div class="col-start-2">
       <Breadcrumbs
         items={[
           { href: '/blog', label: 'Blog', icon: 'lucide:library-big' },
           ...(isCurrentSubpost && parentPost
             ? [
-                {
-                  href: `/blog/${parentPost.id}`,
-                  label: parentPost.data.title,
-                  icon: 'lucide:book-open',
-                },
-                {
-                  href: `/blog/${currentPostId}`,
-                  label: post.data.title,
-                  icon: 'lucide:file-text',
-                },
+                { href: `/blog/${parentPost.id}`, label: parentPost.data.title, icon: 'lucide:book-open' },
+                { href: `/blog/${postId}`, label: post.data.title, icon: 'lucide:file-text' },
               ]
-            : [
-                {
-                  href: `/blog/${currentPostId}`,
-                  label: post.data.title,
-                  icon: 'lucide:book-open-text',
-                },
-              ]),
+            : [{ href: `/blog/${postId}`, label: post.data.title, icon: 'lucide:book-open-text' }]),
         ]}
       />
     </div>
 
-    {
-      post.data.image && (
-        <Image
-          src={post.data.image}
-          alt={post.data.title}
-          width={1200}
-          height={630}
-          class="col-span-full mx-auto w-full max-w-5xl object-cover"
-        />
-      )
-    }
+    {post.data.image && (
+      <Image
+        src={post.data.image}
+        alt={post.data.title}
+        width={1600}
+        height={500}
+        class="col-span-full mx-auto w-full max-w-5xl object-cover"
+      />
+    )}
 
     <section class="col-start-2 flex flex-col gap-y-6 text-center">
-      <div class="flex flex-col">
-        <h1
-          class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl"
-          id="post-title"
-        >
-          {post.data.title}
-        </h1>
+      <h1 class="mb-2 scroll-mt-31 text-3xl leading-tight font-medium sm:text-4xl">
+        {post.data.title}
+      </h1>
 
-        <div
-          class="text-muted-foreground divide-border mb-4 flex flex-col items-center justify-center divide-y text-xs sm:flex-row sm:flex-wrap sm:divide-x sm:divide-y-0 sm:text-sm"
-        >
-          {
-            authors.length > 0 && (
-              <div class="flex w-full items-center justify-center gap-x-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
-                {authors.map((author) => (
-                  <div class="flex items-center gap-x-1.5">
-                    <Image
-                      src={author.avatar}
-                      alt={author.name}
-                      width={20}
-                      height={20}
-                      class="rounded-full"
-                    />
-                    {author.isRegistered ? (
-                      <Link
-                        href={`/authors/${author.id}`}
-                        underline
-                        class="text-foreground"
-                      >
-                        <span>{author.name}</span>
-                      </Link>
-                    ) : (
-                      <span>{author.name}</span>
-                    )}
-                  </div>
-                ))}
+      <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
+        {authors.length > 0 && (
+          <div class="flex items-center gap-x-1.5">
+            {authors.map((author) => (
+              <div class="flex items-center gap-x-1.5">
+                <Image src={author.avatar} alt={author.name} width={20} height={20} class="rounded-full" />
+                <span>{author.name}</span>
               </div>
-            )
-          }
-
-          <div
-            class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-          >
-            <span>{formatDate(post.data.date)}</span>
+            ))}
           </div>
-
-          <div
-            class="flex w-full items-center justify-center gap-2 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-          >
-            <span>
-              {postReadingTime}
-              {
-                combinedReadingTime &&
-                  combinedReadingTime !== postReadingTime && (
-                    <span class="text-muted-foreground">
-                      {' '}
-                      ({combinedReadingTime} total)
-                    </span>
-                  )
-              }
-            </span>
-          </div>
-
-          {
-            subpostCount > 0 && (
-              <div class="flex w-full items-center justify-center gap-1 py-2 sm:w-fit sm:px-2 sm:py-0 first:sm:pl-0 last:sm:pr-0">
-                <Icon name="lucide:file-text" class="size-3" />
-                {subpostCount} subpost{subpostCount === 1 ? '' : 's'}
-              </div>
-            )
-          }
-        </div>
-        <div class="flex flex-wrap justify-center gap-2">
-          {
-            post.data.tags &&
-              post.data.tags.length > 0 &&
-              post.data.tags.map((tag) => (
-                <a
-                  href={`/tags/${tag}`}
-                  class={badgeVariants({ variant: 'secondary' })}
-                >
-                  <Icon name="lucide:hash" class="size-3" />
-                  {tag}
-                </a>
-              ))
-          }
-        </div>
+        )}
+        <span>{formatDate(post.data.date)}</span>
+        <span>{postReadingTime}</span>
+        {combinedReadingTime && combinedReadingTime !== postReadingTime && (
+          <span class="text-muted-foreground">({combinedReadingTime} total)</span>
+        )}
+        {subpostCount > 0 && (
+          <span class="flex items-center gap-1">
+            {subpostCount} subpost{subpostCount === 1 ? '' : 's'}
+          </span>
+        )}
       </div>
+
+      {post.data.tags && post.data.tags.length > 0 && (
+       <div class="flex flex-wrap justify-center gap-2 mt-2">
+      {post.data.tags.map((tag) => (
+      <Link
+  href={`/tags/${tag}`}
+  class="px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 transition-colors"
+>
+  #{tag}
+</Link>
+      ))}
+      </div>
+      )}
 
       <PostNavigation
         newerPost={navigation.newer}
@@ -217,68 +157,107 @@ const tocSections = await getTOCSections(currentPostId)
       />
     </section>
 
-    {
-      tocSections.length > 0 && (
-        <TOCSidebar sections={tocSections} currentPostId={currentPostId} />
-      )
-    }
+    {tocSections.length > 0 && <TOCSidebar sections={tocSections} currentPostId={postId} />}
 
     <article class="prose col-start-2 max-w-none">
       <Content />
     </article>
 
-    {
-      (hasChildPosts || isCurrentSubpost) && (
-        <SubpostsSidebar
-          parentId={
-            isCurrentSubpost ? getParentId(currentPostId) : currentPostId
-          }
-          className="w-64"
-        />
-      )
-    }
 
+
+
+<!-- ✅ Comments Section -->
+<section id="comments" class="col-start-2 mt-12">
+  <div class="max-w-5xl mx-auto p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-900 transition-colors">
+    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Comments</h2>
+    
+    <script
+      src="https://giscus.app/client.js"
+      data-repo="Dijkstra-Edu/LeetCode-Solutions"
+      data-repo-id="R_kgDOJujpnQ"
+      data-category="General"
+      data-category-id="DIC_kwDOJujpnc4Cv939"
+      data-mapping="url"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="top"
+      data-theme="light"
+      data-lang="en"
+      data-loading="lazy"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </div>
+</section>
+
+<script is:inline>
+function updateGiscusTheme(theme) {
+  const giscusIframe = document.querySelector('iframe.giscus-frame');
+  if (!giscusIframe) return;
+  giscusIframe.contentWindow.postMessage(
+    { giscus: { setConfig: { theme } } },
+    'https://giscus.app'
+  );
+}
+
+// Detect clicks on the toggle button
+const toggleBtn = document.getElementById('theme-toggle-btn');
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', () => {
+    const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    updateGiscusTheme(theme);
+  });
+}
+
+// Also sync on page load
+window.addEventListener('load', () => {
+  const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  updateGiscusTheme(theme);
+});
+</script>
+
+   
+ 
+    <!-- ✅ Related Posts Section -->
+    {relatedPosts.length > 0 && (
+      <section class="col-start-2 mt-12">
+        <h2 class="text-xl font-semibold mb-4">Related Posts</h2>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {relatedPosts.map((rel) => (
+            <a href={`/blog/${rel.id}`} class="block border rounded-lg p-4 hover:shadow-md transition">
+              {rel.data.image && (
+                <Image
+                  src={rel.data.image}
+                  alt={rel.data.title}
+                  width={400}
+                  height={200}
+                  class="w-full h-40 object-cover rounded-md mb-2"
+                />
+              )}
+              <h3 class="font-medium">{rel.data.title}</h3>
+              <p class="text-sm text-muted-foreground">{rel.data.description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+  
+
+
+
+    {(hasChildPosts || isCurrentSubpost) && (
+      <SubpostsSidebar
+        parentId={isCurrentSubpost ? getParentId(postId) : postId}
+        className="w-64"
+      />
+    )}
+    
     <PostNavigation
       newerPost={navigation.newer}
       olderPost={navigation.older}
       parentPost={isCurrentSubpost ? navigation.parent : undefined}
     />
   </section>
-
-  <Button
-    variant="outline"
-    size="icon"
-    className="group fixed right-8 bottom-8 z-50 hidden"
-    id="scroll-to-top"
-    title="Scroll to top"
-    aria-label="Scroll to top"
-  >
-    <Icon
-      name="lucide:arrow-up"
-      class="mx-auto size-4 transition-all group-hover:-translate-y-0.5"
-    />
-  </Button>
-
-  <script>
-    document.addEventListener('astro:page-load', () => {
-      const scrollToTopButton = document.getElementById('scroll-to-top')
-      const footer = document.querySelector('footer')
-
-      if (scrollToTopButton && footer) {
-        scrollToTopButton.addEventListener('click', () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-        })
-
-        window.addEventListener('scroll', () => {
-          const footerRect = footer.getBoundingClientRect()
-          const isFooterVisible = footerRect.top <= window.innerHeight
-
-          scrollToTopButton.classList.toggle(
-            'hidden',
-            window.scrollY <= 300 || isFooterVisible,
-          )
-        })
-      }
-    })
-  </script>
 </Layout>

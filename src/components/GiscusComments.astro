@@ -1,0 +1,44 @@
+---
+// Props for flexibility
+const { repo, repoId, category, categoryId, mapping = 'url', inputPosition = 'top', reactionsEnabled = '1', lang = 'en' } = Astro.props;
+---
+
+<div class="w-full max-w-5xl mx-auto p-4 border rounded-lg shadow-sm bg-white dark:bg-gray-900 transition-colors">
+  <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">Comments</h2>
+  <div id="giscus-container">
+    <script
+      src="https://giscus.app/client.js"
+      data-repo={repo}
+      data-repo-id={repoId}
+      data-category={category}
+      data-category-id={categoryId}
+      data-mapping={mapping}
+      data-strict="0"
+      data-reactions-enabled={reactionsEnabled}
+      data-input-position={inputPosition}
+      data-theme="light"
+      data-lang={lang}
+      crossorigin="anonymous"
+      async
+    ></script>
+  </div>
+</div>
+
+<script is:inline>
+  function syncGiscusTheme() {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (!iframe) {
+      setTimeout(syncGiscusTheme, 200); // retry until iframe exists
+      return;
+    }
+    const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    iframe.contentWindow.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+  }
+
+  // Watch <html> class changes for Tailwind dark mode
+  const observer = new MutationObserver(syncGiscusTheme);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  // Initial sync after iframe loads
+  window.addEventListener('load', syncGiscusTheme);
+</script>
