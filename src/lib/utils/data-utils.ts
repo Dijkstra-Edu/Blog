@@ -103,7 +103,9 @@ export async function getPostsByAuthor(
   authorId: string,
 ): Promise<CollectionEntry<'blog'>[]> {
   const posts = await getAllPosts()
-  return posts.filter((post) => post.data.authors?.includes(authorId))
+  return posts.filter((post) =>
+    post.data.authors?.some((author) => author.id === authorId)
+  );
 }
 
 export async function getPostsByTag(
@@ -124,7 +126,7 @@ export async function getSortedTags(): Promise<
   { tag: string; count: number }[]
 > {
   const tagCounts = await getAllTags()
-  return [...tagCounts.entries()]
+  return Array.from(tagCounts.entries())
     .map(([tag, count]) => ({ tag, count }))
     .sort((a, b) => {
       const countDiff = b.count - a.count

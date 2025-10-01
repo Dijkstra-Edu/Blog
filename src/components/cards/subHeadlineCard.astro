@@ -6,7 +6,7 @@ import { getDateDistance } from "@/lib/utils/date";
 import { categoriesHandler } from "@/lib/handlers/categories";
 
 type Props = {
-  article: CollectionEntry<"articles">;
+  article: CollectionEntry<"blog"> | CollectionEntry<"articles">;
   isFirst?: boolean;
   isLast?: boolean;
 };

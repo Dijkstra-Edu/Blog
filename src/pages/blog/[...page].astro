@@ -39,11 +39,11 @@ const years = Object.keys(postsByYear)
   <div class="flex min-h-[calc(100vh-18rem)] flex-col gap-y-8">
     {years.length > 0 ? (
       years.map((year) => (
-        <section class="flex flex-col gap-y-4" key={year}>
+        <section class="flex flex-col gap-y-4">
           <div class="font-medium">{year}</div>
           <ul class="flex flex-col gap-4">
             {postsByYear[year].map((post) => (
-              <li key={post.id}>
+              <li>
                 <BlogCard entry={post} />
               </li>
             ))}

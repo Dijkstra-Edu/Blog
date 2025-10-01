@@ -16,7 +16,12 @@ const articles = articlesHandler.allArticles();
     {
       articles
         .slice(0, 6)
-        .map((article, index) => <NewsCard article={article} index={index} />)
+        .map((article, index) => (
+          <NewsCard
+            article={{ ...article, collection: "articles" }}
+            index={index}
+          />
+        ))
     }
   </div>
 </section>

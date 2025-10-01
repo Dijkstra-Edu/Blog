@@ -78,7 +78,7 @@
   }
 
   // Fallback clipboard function for older browsers
-  function fallbackCopyTextToClipboard(text) {
+  async function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
     textArea.style.position = "fixed";
@@ -89,7 +89,7 @@
     textArea.select();
 
     try {
-      document.execCommand("copy");
+      await navigator.clipboard.writeText(text);
       console.log("Fallback: Text copied to clipboard");
     } catch (err) {
       console.error("Fallback: Unable to copy text to clipboard", err);
