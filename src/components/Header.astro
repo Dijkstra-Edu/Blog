@@ -1,7 +1,6 @@
 ---
 import Link from '@/components/Link.astro'
 import ThemeToggle from '@/components/ThemeToggle.astro'
-import MobileMenu from '@/components/ui/mobile-menu'
 import { NAV_LINKS, SITE } from '@/consts'
 import { Image } from 'astro:assets'
 import logo from '../../public/icon.png'
@@ -67,8 +66,9 @@ import Search01 from "@/assets/svgs/search-01.astro";
               >
                 &times;
               </button>
+              <!-- TODO @kailash -->
               <button type="submit" aria-label="Search">
-                <Search01 class="w-5 h-5 text-foreground/60 hover:text-foreground" />
+                <span class="w-5 h-5 text-foreground/60 hover:text-foreground"><Search01 /></span>
               </button>
             </div>
 
@@ -144,11 +144,15 @@ import Search01 from "@/assets/svgs/search-01.astro";
         profileDropdown.classList.toggle("hidden");
       });
 
-      document.addEventListener("click", (e) => {
-        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
-          profileDropdown.classList.add("hidden");
-        }
-      });
+  document.addEventListener("click", (e) => {
+  const target = e.target;
+  if (target instanceof Node) {
+    if (!profileDropdown.contains(target) && !profileBtn.contains(target)) {
+      profileDropdown.classList.add("hidden");
+    }
+  }
+});
+
     }
 
     // Search overlay

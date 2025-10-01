@@ -59,14 +59,21 @@ export const authorSchema = (Image: ImageFunction) =>
     job: z.string(),
     avatar: Image(),
     bio: z.string(),
+    pronouns: z.string().optional(),
+    mail: z.string().email().optional(),
+    github: z.string().url().optional(),
+    linkedin: z.string().url().optional(),
+    twitter: z.string().url().optional(),
+    website: z.string().url().optional(),
     social: z.array(
       z.object({
         name: z.string(),
         url: z.string(),
         icon: z.string(),
       })
-    ),
+    ).optional(),
   });
+
 
 // avatar: Image().refine(
 //   (img) => {

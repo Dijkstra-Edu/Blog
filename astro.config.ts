@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config'
+import vercel from '@astrojs/vercel/static'
 import path from 'path'
 import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
@@ -25,6 +26,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
  
   site: 'https://www.dijkstra.org.in/',
+  output: 'static',
+  adapter: vercel({}),
   integrations: [
      pagefind(),
     expressiveCode({

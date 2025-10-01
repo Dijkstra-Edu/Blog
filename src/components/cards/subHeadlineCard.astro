@@ -6,29 +6,32 @@ import { getDateDistance } from "@/lib/utils/date";
 import { categoriesHandler } from "@/lib/handlers/categories";
 
 type Props = {
-  article: CollectionEntry<"articles">;
+  article: CollectionEntry<"blog"> | CollectionEntry<"articles">;
   isFirst?: boolean;
   isLast?: boolean;
 };
 const { article, isLast, isFirst } = Astro.props;
 
 const category = categoriesHandler.oneCategory(article.data.category.id);
-// const authors = article.data.authors ? article.data.authors.join(", ") : "Unknown";
-
 
 // ✅ Handle authors: convert array/object to readable string
+// ✅ Handle authors safely
 let authors: string = "Unknown Author";
+
 if (Array.isArray(article.data.authors)) {
   authors = article.data.authors
-    .map((a) => (typeof a === "string" ? a : a.name || a.id || "Unknown"))
+    .map(a => {
+      if (typeof a === "string") return a;
+      return (a as { name?: string; id: string }).name || (a as { name?: string; id: string }).id || "Unknown";
+    })
     .join(", ");
 } else if (typeof article.data.authors === "string") {
   authors = article.data.authors;
-} else if (article.data.authors?.name) {
-  authors = article.data.authors.name;
+} else if (article.data.authors && typeof article.data.authors === "object" && "name" in article.data.authors) {
+  authors = (article.data.authors as { name?: string }).name || "Unknown";
 }
----
 
+---
 <article
   class:list={[
     "group py-2 flex items-stretch gap-2 group relative isolate",
@@ -59,7 +62,7 @@ if (Array.isArray(article.data.authors)) {
       <span>|</span>
       <Divider />
 
-      <span>{getDateDistance(article.data.date)}</span>
+      <span>{getDateDistance(article.data.publishedTime)}</span>
 
       <Divider />
       <span>|</span>
@@ -74,8 +77,8 @@ if (Array.isArray(article.data.authors)) {
   >
     <Image
       src={article.data.cover}
-      alt={article.data.cover_alt
-        ? article.data.cover_alt
+      alt={article.data.covert_alt
+        ? article.data.covert_alt
         : article.data.title}
       loading="eager"
       widths={[120, 320]}
