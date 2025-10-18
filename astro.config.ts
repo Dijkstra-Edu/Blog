@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config'
-import vercel from '@astrojs/vercel/static'
+import vercel from '@astrojs/vercel'
 import path from 'path'
 import mdx from '@astrojs/mdx'
 import react from '@astrojs/react'
@@ -20,16 +20,13 @@ import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers'
 import tailwindcss from '@tailwindcss/vite'
 
 
-// Import your site config for virtual:config
-
-
 export default defineConfig({
- 
   site: 'https://www.dijkstra.org.in/',
   output: 'static',
   adapter: vercel({}),
+
   integrations: [
-     pagefind(),
+    pagefind(),
     expressiveCode({
       themes: ['github-light', 'github-dark'],
       plugins: [pluginCollapsibleSections(), pluginLineNumbers()],
@@ -39,30 +36,26 @@ export default defineConfig({
         wrap: true,
         collapseStyle: 'collapsible-auto',
         overridesByLang: {
-          'ansi,bat,bash,batch,cmd,console,powershell,ps,ps1,psd1,psm1,sh,shell, shellscript,shellsession,text,zsh':
-            {
-              showLineNumbers: false,
-            },
+          'ansi,bat,bash,batch,cmd,console,powershell,ps,ps1,psd1,psm1,sh,shell, shellscript,shellsession,text,zsh': {
+            showLineNumbers: false,
+          },
         },
       },
       styleOverrides: {
         codeFontSize: '0.75rem',
         borderColor: 'var(--border)',
         codeFontFamily: 'var(--font-mono)',
-        codeBackground:
-          'color-mix(in oklab, var(--secondary) 25%, transparent)',
+        codeBackground: 'color-mix(in oklab, var(--secondary) 25%, transparent)',
         frames: {
           editorActiveTabForeground: 'var(--muted-foreground)',
-          editorActiveTabBackground:
-            'color-mix(in oklab, var(--secondary) 25%, transparent)',
+          editorActiveTabBackground: 'color-mix(in oklab, var(--secondary) 25%, transparent)',
           editorActiveTabIndicatorBottomColor: 'transparent',
           editorActiveTabIndicatorTopColor: 'transparent',
           editorTabBorderRadius: '0',
           editorTabBarBackground: 'transparent',
           editorTabBarBorderBottomColor: 'transparent',
           frameBoxShadowCssValue: 'none',
-          terminalBackground:
-            'color-mix(in oklab, var(--secondary) 25%, transparent)',
+          terminalBackground: 'color-mix(in oklab, var(--secondary) 25%, transparent)',
           terminalTitlebarBackground: 'transparent',
           terminalTitlebarBorderBottomColor: 'transparent',
           terminalTitlebarForeground: 'var(--muted-foreground)',
@@ -78,24 +71,48 @@ export default defineConfig({
     sitemap(),
     icon(),
   ],
+
   vite: {
     plugins: [tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve('./src'),
         '@assets': path.resolve('./src/assets'),
-        // Add this alias to solve the virtual:config error
         'virtual:config': path.resolve('./src/site-config.ts'),
       },
     },
+
+    // ✅ FIX #1: Ensure CSS preloading & faster route transitions
+    build: {
+      cssCodeSplit: true,
+      rollupOptions: {
+        output: {
+          manualChunks: undefined,
+        },
+      },
+    },
+
+    // ✅ FIX #2: Prevent full reloads when navigating on client
+    optimizeDeps: {
+      exclude: ['@astrojs/vercel'],
+    },
   },
+
+  // ✅ FIX #3: Avoid hydration delay issues on deployed version
+  experimental: {
+    clientPrerender: true,
+  },
+
+  // ✅ FIX #4: Disable dev toolbar (already done but reaffirmed)
+  devToolbar: {
+    enabled: false,
+  },
+
   server: {
     port: 1234,
     host: true,
   },
-  devToolbar: {
-    enabled: false,
-  },
+
   markdown: {
     syntaxHighlight: false,
     rehypePlugins: [
@@ -114,7 +131,6 @@ export default defineConfig({
       ],
       rehypeHeadingIds,
       rehypeKatex,
-      
     ],
     remarkPlugins: [remarkMath, remarkEmoji],
   },

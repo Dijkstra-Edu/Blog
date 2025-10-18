@@ -7,22 +7,23 @@ import logo from '../../public/icon.png'
 import Search01 from "@/assets/svgs/search-01.astro";
 ---
 
-<header transition:persist>
+<header>
   <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
     <!-- Logo -->
-    <Link href="/" class="flex shrink-0 items-center gap-3">
+    <Link href="/" class="flex shrink-0 items-center gap-3" transition:persist>
       <Image src={logo} alt="Logo" class="size-7 sm:size-8" />
       <span class="hidden text-lg font-medium min-[300px]:block">{SITE.title}</span>
     </Link>
 
     <!-- Right side -->
-    <div class="flex items-center sm:gap-4 relative">
+    <div class="flex items-center sm:gap-4 relative" transition:persist>
       <!-- Nav Links -->
       <nav class="hidden items-center gap-4 text-sm sm:flex sm:gap-6">
         {NAV_LINKS.map((item) => (
           <Link
             href={item.href}
             class="text-foreground/60 hover:text-foreground/80 capitalize transition-colors"
+            transition:persist
           >
             {item.label}
           </Link>
@@ -30,8 +31,7 @@ import Search01 from "@/assets/svgs/search-01.astro";
       </nav>
 
       <!-- Search -->
-      <div class="relative hidden sm:block">
-        <!-- Trigger input (navbar) -->
+      <div class="relative hidden sm:block" transition:persist>
         <input
           type="text"
           placeholder="Search..."
@@ -40,7 +40,6 @@ import Search01 from "@/assets/svgs/search-01.astro";
                  focus:outline-none focus:ring-2 focus:ring-primary transition-all"
         />
 
-        <!-- Overlay -->
         <div
           id="search-overlay"
           class="invisible fixed inset-0 z-50 flex justify-center bg-[rgba(0,0,0,0.5)] backdrop-blur-sm p-6 transition-opacity duration-300"
@@ -58,7 +57,6 @@ import Search01 from "@/assets/svgs/search-01.astro";
                 class="flex-1 rounded-md border border-foreground/20 bg-background px-3 py-2 text-base 
                        focus:outline-none focus:ring-2 focus:ring-primary transition-all"
               />
-              <!-- Clear button -->
               <button
                 id="clear-search"
                 type="button"
@@ -66,13 +64,11 @@ import Search01 from "@/assets/svgs/search-01.astro";
               >
                 &times;
               </button>
-              <!-- TODO @kailash -->
               <button type="submit" aria-label="Search">
                 <span class="w-5 h-5 text-foreground/60 hover:text-foreground"><Search01 /></span>
               </button>
             </div>
 
-            <!-- Results dropdown -->
             <div id="search-results" class="pagefind-ui pagefind-init flex flex-col gap-2 overflow-auto transition-all duration-300 opacity-0 translate-y-2"></div>
 
             <div class="dark:prose-invert mr-2 pt-4 pb-1 text-right text-xs">
@@ -81,9 +77,12 @@ import Search01 from "@/assets/svgs/search-01.astro";
           </div>
         </div>
       </div>
-      <ThemeToggle class="ml-2" transition:persist />
+
+      <!-- Theme Toggle -->
+      <ThemeToggle class="ml-2" transition:persist client:load />
+
       <!-- Profile / Auth Menu -->
-      <div class="relative">
+      <div class="relative" transition:persist>
         <button
           id="profile-btn"
           class="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center"
@@ -91,12 +90,10 @@ import Search01 from "@/assets/svgs/search-01.astro";
           <span>U</span>
         </button>
 
-        <!-- Profile Dropdown -->
         <div
           id="profile-dropdown"
           class="hidden absolute right-0 mt-2 w-64 rounded-xl border border-foreground/10 bg-background shadow-lg z-50"
         >
-          <!-- User info -->
           <div class="flex items-center gap-3 p-4 border-b border-foreground/10">
             <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary/60 to-primary/80 flex items-center justify-center text-white font-medium">
               U
@@ -107,7 +104,6 @@ import Search01 from "@/assets/svgs/search-01.astro";
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="flex flex-col gap-2 p-3">
             <a
               href="https://www.dijkstra.org.in/onboarding"
@@ -123,7 +119,6 @@ import Search01 from "@/assets/svgs/search-01.astro";
             </a>
           </div>
 
-          <!-- Footer links -->
           <div class="border-t border-foreground/10 p-3 text-xs flex justify-between text-foreground/60">
             <a href="#" class="hover:text-foreground transition-colors">Help</a>
             <a href="#" class="hover:text-foreground transition-colors">About</a>
@@ -134,7 +129,15 @@ import Search01 from "@/assets/svgs/search-01.astro";
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Prevent hydration flashes -->
+  <script is:inline>
+    document.documentElement.style.visibility = 'hidden';
+    window.addEventListener('astro:page-load', () => {
+      document.documentElement.style.visibility = 'visible';
+    });
+  </script>
+
+  <!-- Profile & Search Scripts (unchanged) -->
   <script is:inline>
     const profileBtn = document.getElementById("profile-btn");
     const profileDropdown = document.getElementById("profile-dropdown");
@@ -144,18 +147,16 @@ import Search01 from "@/assets/svgs/search-01.astro";
         profileDropdown.classList.toggle("hidden");
       });
 
-  document.addEventListener("click", (e) => {
-  const target = e.target;
-  if (target instanceof Node) {
-    if (!profileDropdown.contains(target) && !profileBtn.contains(target)) {
-      profileDropdown.classList.add("hidden");
+      document.addEventListener("click", (e) => {
+        const target = e.target;
+        if (target instanceof Node) {
+          if (!profileDropdown.contains(target) && !profileBtn.contains(target)) {
+            profileDropdown.classList.add("hidden");
+          }
+        }
+      });
     }
-  }
-});
 
-    }
-
-    // Search overlay
     const headerInput = document.getElementById("header-search-input");
     const overlay = document.getElementById("search-overlay");
     const overlayInput = document.getElementById("overlay-search-input");
@@ -178,11 +179,7 @@ import Search01 from "@/assets/svgs/search-01.astro";
     }
 
     headerInput?.addEventListener("focus", showOverlay);
-
-    overlay?.addEventListener("click", (e) => {
-      if (e.target === overlay) hideOverlay();
-    });
-
+    overlay?.addEventListener("click", (e) => { if (e.target === overlay) hideOverlay(); });
     clearBtn?.addEventListener("click", hideOverlay);
 
     window.addEventListener("DOMContentLoaded", async () => {
@@ -222,7 +219,7 @@ import Search01 from "@/assets/svgs/search-01.astro";
     document.addEventListener("keydown", (e) => { if(e.key === "Escape") hideOverlay(); });
   </script>
 
-  <!-- Styling -->
+  <!-- Styling (unchanged) -->
   <style is:inline>
     :root {
       --pagefind-ui-primary: oklch(var(--p));
@@ -244,6 +241,4 @@ import Search01 from "@/assets/svgs/search-01.astro";
     }
     #search-results a:hover { background: rgba(0,0,0,0.04); }
   </style>
-  
-
 </header>
